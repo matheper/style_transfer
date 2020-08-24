@@ -24,6 +24,14 @@ def load_img(img_bytes):
     return img
 
 
+# Function to load an image to a BytesIO buffer.
+def buffer_img(img):
+    buffer = io.BytesIO()
+    img.save(buffer, format='jpeg')
+    buffer.seek(0)
+    return buffer
+
+
 def save_img(img):
     tf.keras.preprocessing.image.save_img('stylized_image.jpg', img)
     # img = tf.keras.preprocessing.image.array_to_img(img)
@@ -49,6 +57,7 @@ def postprocess_img(img):
     if len(img.shape) > 3:
         img = tf.squeeze(img, axis=0)
     img = img * 255
+    img = tf.keras.preprocessing.image.array_to_img(img)
     return img
 
 

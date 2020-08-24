@@ -1,4 +1,7 @@
+import io
+
 import uvicorn
+from starlette.responses import StreamingResponse
 from fastapi import FastAPI, File
 
 from transfer_style import (
@@ -8,6 +11,7 @@ from transfer_style import (
     run_style_predict,
     run_style_transform,
     postprocess_img,
+    buffer_img,
 )
 
 app = FastAPI()
@@ -30,7 +34,11 @@ async def style(content_img: bytes = File(...), style_img: bytes = File(...)):
     stylized_image = run_style_transform(style_bottleneck, content_img)
     stylized_image = postprocess_img(stylized_image)
     save_img(stylized_image)
-    return {'image': len(stylized_image)}
+
+    return StreamingResponse(
+        buffer_img(stylized_image),
+        media_type="image/jpg",
+    )
 
 
 if __name__ == '__main__':
