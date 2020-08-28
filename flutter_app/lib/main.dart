@@ -5,6 +5,9 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart' as mime;
+
 
 Future<void> main() async{
   // Ensure that plugin services are initialized
@@ -148,6 +151,16 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
             // Attempt to take a picture and log where it's been saved.
             await _controller.takePicture(path);
+
+            var uri = Uri.parse('http://192.168.2.11:8000/style');
+            var request = http.MultipartRequest('POST', uri)
+              ..files.add(await http.MultipartFile.fromPath(
+                  'content_img', path))
+              ..files.add(await http.MultipartFile.fromPath(
+                'style_img', path));
+            // http.StreamedResponse
+            var response = await request.send();
+            if (response.statusCode == 200) print('Uploaded!');
 
             // If the picture was taken, display it on a new screen.
             Navigator.push(
