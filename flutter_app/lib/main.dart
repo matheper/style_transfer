@@ -162,11 +162,22 @@ class TakePictureScreenState extends State<TakePictureScreen> {
             var response = await request.send();
             if (response.statusCode == 200) print('Uploaded!');
 
+            var responseData = await response.stream.toBytes();
+            print('Downloaded!');
+            final styled_path = join(
+              // Store the picture in the temp directory.
+              // Find the temp directory using the `path_provider` plugin.
+              (await getTemporaryDirectory()).path,
+              '${DateTime.now()}.png',
+            );
+            File newFile = new File(styled_path);
+            await newFile.writeAsBytes(responseData);
             // If the picture was taken, display it on a new screen.
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => DisplayPictureScreen(imagePath: path),
+                builder: (context) => DisplayPictureScreen(imagePath: styled_path),
+//                builder: (context) => DisplayPictureScreen(imagePath: path),
               ),
             );
           } catch (e) {
