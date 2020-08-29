@@ -53,7 +53,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool _visible = false;
 
   @override
   Widget build(BuildContext context) {
@@ -62,16 +61,19 @@ class _HomePageState extends State<HomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child:Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: GridView.count(
+          primary: false,
+          padding: const EdgeInsets.all(20),
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          crossAxisCount: 2,
           children: <Widget>[
-            Text(
-              'Select Style',
-              style: Theme.of(context).textTheme.headline4,
+            for(var i=0; i<10; i+=1) Container(
+              child: Image(image: AssetImage('assets/images/style$i.jpg')),
             ),
-            Image(image: AssetImage('assets/images/style0.jpg')),
-          ],
+          ]
         ),
+//
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
