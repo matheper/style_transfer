@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
@@ -71,7 +72,10 @@ class _HomePageState extends State<HomePage> {
               Container(
                 child: GestureDetector(
                   onTap: () {
-                    Navigator.pushNamed(context, '/camera');
+                    Navigator.pushNamed(
+                        context,
+                        '/camera',
+                        arguments: 'assets/images/style$i.jpg');
                   },
                   child: Image(image: AssetImage('assets/images/style$i.jpg')),
                 ),
@@ -117,6 +121,9 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    final String styleImg = ModalRoute.of(context).settings.arguments;
+
     return Scaffold(
       appBar: AppBar(title: Text('Take a picture')),
       body: FutureBuilder<void>(
@@ -148,35 +155,36 @@ class TakePictureScreenState extends State<TakePictureScreen> {
               (await getTemporaryDirectory()).path,
               '${DateTime.now()}.png',
             );
-
             // Attempt to take a picture and log where it's been saved.
             await _controller.takePicture(path);
-
+            var styledImgBytes = (
+                await rootBundle.load(styleImg)
+            ).buffer.asUint8List();
             var uri = Uri.parse('http://192.168.2.11:8000/style');
             var request = http.MultipartRequest('POST', uri)
               ..files.add(await http.MultipartFile.fromPath(
                   'content_img', path))
-              ..files.add(await http.MultipartFile.fromPath(
-                'style_img', path));
+              ..files.add(http.MultipartFile.fromBytes(
+                'style_img', styledImgBytes, filename: 'style.jpg'
+              ));
             // http.StreamedResponse
             var response = await request.send();
             if (response.statusCode == 200) print('Uploaded!');
 
             var responseData = await response.stream.toBytes();
-            print('Downloaded!');
-            final styled_path = join(
+            final styledPath = join(
               // Store the picture in the temp directory.
               // Find the temp directory using the `path_provider` plugin.
               (await getTemporaryDirectory()).path,
               '${DateTime.now()}.png',
             );
-            File newFile = new File(styled_path);
+            File newFile = new File(styledPath);
             await newFile.writeAsBytes(responseData);
             // If the picture was taken, display it on a new screen.
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => DisplayPictureScreen(imagePath: styled_path),
+                builder: (context) => DisplayPictureScreen(imagePath: styledPath),
 //                builder: (context) => DisplayPictureScreen(imagePath: path),
               ),
             );
