@@ -62,13 +62,14 @@ class _HomePageState extends State<HomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Column(
+        child:Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              'Style Transfer',
+              'Select Style',
               style: Theme.of(context).textTheme.headline4,
             ),
+            Image(image: AssetImage('assets/images/style0.jpg')),
           ],
         ),
       ),
