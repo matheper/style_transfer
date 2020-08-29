@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart' as mime;
 
 
 Future<void> main() async{
@@ -68,19 +67,17 @@ class _HomePageState extends State<HomePage> {
           mainAxisSpacing: 10,
           crossAxisCount: 2,
           children: <Widget>[
-            for(var i=0; i<10; i+=1) Container(
-              child: Image(image: AssetImage('assets/images/style$i.jpg')),
-            ),
+            for(var i=0; i<10; i+=1)
+              Container(
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, '/camera');
+                  },
+                  child: Image(image: AssetImage('assets/images/style$i.jpg')),
+                ),
+              ),
           ]
         ),
-//
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, '/camera');
-        },
-        tooltip: 'Take a picture',
-        child: Icon(Icons.photo_camera),
       ),
     );
   }
