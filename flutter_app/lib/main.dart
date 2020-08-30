@@ -8,8 +8,7 @@ import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 
-
-Future<void> main() async{
+Future<void> main() async {
   // Ensure that plugin services are initialized
   WidgetsFlutterBinding.ensureInitialized();
   // Obtain a list of the available cameras on the device.
@@ -21,7 +20,6 @@ Future<void> main() async{
 }
 
 class StyleTransferApp extends StatelessWidget {
-
   final CameraDescription _camera;
 
   StyleTransferApp(this._camera);
@@ -38,8 +36,7 @@ class StyleTransferApp extends StatelessWidget {
         routes: {
           '/': (context) => new HomePage(title: 'Style Transfer Flutter'),
           '/camera': (context) => new TakePictureScreen(camera: _camera),
-        }
-    );
+        });
   }
 }
 
@@ -53,7 +50,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,26 +58,24 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Center(
         child: GridView.count(
-          primary: false,
-          padding: const EdgeInsets.all(20),
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          crossAxisCount: 2,
-          children: <Widget>[
-            for(var i=0; i<10; i+=1)
-              Container(
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(
-                        context,
-                        '/camera',
-                        arguments: 'assets/images/style$i.jpg');
-                  },
-                  child: Image(image: AssetImage('assets/images/style$i.jpg')),
+            primary: false,
+            padding: const EdgeInsets.all(20),
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            crossAxisCount: 2,
+            children: <Widget>[
+              for (var i = 0; i < 10; i += 1)
+                Container(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(context, '/camera',
+                          arguments: 'assets/images/style$i.jpg');
+                    },
+                    child:
+                        Image(image: AssetImage('assets/images/style$i.jpg')),
+                  ),
                 ),
-              ),
-          ]
-        ),
+            ]),
       ),
     );
   }
@@ -90,7 +84,7 @@ class _HomePageState extends State<HomePage> {
 class TakePictureScreen extends StatefulWidget {
   final CameraDescription camera;
 
-  const TakePictureScreen({Key key, @required this.camera}): super(key: key);
+  const TakePictureScreen({Key key, @required this.camera}) : super(key: key);
 
   @override
   TakePictureScreenState createState() => TakePictureScreenState();
@@ -101,7 +95,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   Future<void> _initializeControllerFuture;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
 
     _controller = CameraController(
@@ -121,7 +115,6 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     final String styleImg = ModalRoute.of(context).settings.arguments;
 
     return Scaffold(
@@ -157,35 +150,15 @@ class TakePictureScreenState extends State<TakePictureScreen> {
             );
             // Attempt to take a picture and log where it's been saved.
             await _controller.takePicture(path);
-            var styledImgBytes = (
-                await rootBundle.load(styleImg)
-            ).buffer.asUint8List();
-            var uri = Uri.parse('http://192.168.2.11:8000/style');
-            var request = http.MultipartRequest('POST', uri)
-              ..files.add(await http.MultipartFile.fromPath(
-                  'content_img', path))
-              ..files.add(http.MultipartFile.fromBytes(
-                'style_img', styledImgBytes, filename: 'style.jpg'
-              ));
-            // http.StreamedResponse
-            var response = await request.send();
-            if (response.statusCode == 200) print('Uploaded!');
 
-            var responseData = await response.stream.toBytes();
-            final styledPath = join(
-              // Store the picture in the temp directory.
-              // Find the temp directory using the `path_provider` plugin.
-              (await getTemporaryDirectory()).path,
-              '${DateTime.now()}.png',
-            );
-            File newFile = new File(styledPath);
-            await newFile.writeAsBytes(responseData);
             // If the picture was taken, display it on a new screen.
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => DisplayPictureScreen(imagePath: styledPath),
-//                builder: (context) => DisplayPictureScreen(imagePath: path),
+                builder: (context) => DisplayPastiche(
+                  contentPath: path,
+                  stylePath: styleImg,
+                ),
               ),
             );
           } catch (e) {
@@ -198,19 +171,92 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   }
 }
 
-// A widget that displays the picture taken by the user.
-class DisplayPictureScreen extends StatelessWidget {
-  final String imagePath;
+class DisplayPastiche extends StatefulWidget {
+  final String contentPath;
+  final String stylePath;
 
-  const DisplayPictureScreen({Key key, this.imagePath}) : super(key: key);
+  const DisplayPastiche(
+      {Key key, @required this.contentPath, @required this.stylePath})
+      : super(key: key);
 
+  @override
+  _DisplayPasticheState createState() => _DisplayPasticheState();
+}
+
+class _DisplayPasticheState extends State<DisplayPastiche> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Display the Picture')),
-      // The image is stored as a file on the device. Use the `Image.file`
-      // constructor with the given path to display the image.
-      body: Image.file(File(imagePath)),
+      appBar: AppBar(title: Text('Pastiche')),
+      body: Wrap(children: <Widget>[
+        FractionallySizedBox(
+          widthFactor: 0.5,
+          child: Padding(
+            padding: EdgeInsets.all(10),
+            child: Image.file(
+              File(widget.contentPath),
+              width: 256,
+              height: 256,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+        FractionallySizedBox(
+          widthFactor: 0.5,
+          child: Padding(
+            padding: EdgeInsets.all(10),
+            child: Image.asset(
+              widget.stylePath,
+              width: 256,
+              height: 256,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.all(10),
+          child: Center(
+              child: FutureBuilder<String>(
+            future: styleImage(widget.contentPath, widget.stylePath),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                return Image.file(
+                  File(snapshot.data),
+                  width: 512,
+                  height: 512,
+                  fit: BoxFit.cover,
+                );
+              } else {
+                return CircularProgressIndicator();
+              }
+            },
+          )
+          )
+        ),
+      ]),
     );
   }
+}
+
+Future<String> styleImage(String contentPath, String stylePath) async {
+  var styledImgBytes = (await rootBundle.load(stylePath)).buffer.asUint8List();
+  var uri = Uri.parse('http://192.168.2.11:8000/style');
+  var request = http.MultipartRequest('POST', uri)
+    ..files.add(await http.MultipartFile.fromPath('content_img', contentPath))
+    ..files.add(http.MultipartFile.fromBytes('style_img', styledImgBytes,
+        filename: 'style.jpg'));
+  // http.StreamedResponse
+  var response = await request.send();
+  if (response.statusCode == 200) print('Uploaded!');
+
+  var responseData = await response.stream.toBytes();
+  String pastichePath = join(
+    // Store the picture in the temp directory.
+    // Find the temp directory using the `path_provider` plugin.
+    (await getTemporaryDirectory()).path,
+    '${DateTime.now()}.png',
+  );
+  File newFile = new File(pastichePath);
+  await newFile.writeAsBytes(responseData);
+  return pastichePath;
 }
