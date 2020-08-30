@@ -216,21 +216,24 @@ class _DisplayPasticheState extends State<DisplayPastiche> {
         Padding(
           padding: EdgeInsets.all(10),
           child: Center(
-              child: FutureBuilder<String>(
-            future: styleImage(widget.contentPath, widget.stylePath),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done) {
-                return Image.file(
-                  File(snapshot.data),
-                  width: 512,
-                  height: 512,
-                  fit: BoxFit.cover,
-                );
-              } else {
-                return CircularProgressIndicator();
-              }
-            },
-          )
+            child: FutureBuilder<String>(
+              future: styleImage(widget.contentPath, widget.stylePath),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  return RotatedBox(
+                    quarterTurns: 5,
+                    child: Image.file(
+                      File(snapshot.data),
+                      width: 512,
+                      height: 512,
+                      fit: BoxFit.cover,
+                    )
+                  );
+                } else {
+                  return CircularProgressIndicator();
+                }
+              },
+            )
           )
         ),
       ]),
