@@ -2,7 +2,6 @@
 
 Artistic Style Transfer with Flutter, TensorFlow and FastAPI.
 
-Based on [Style Transfer from TensorFlow.org](https://www.tensorflow.org/lite/models/style_transfer/overview).
 
 ## Install
 
