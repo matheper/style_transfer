@@ -5,13 +5,8 @@ import tensorflow as tf
 from PIL import Image
 
 
-style_predict = tf.lite.Interpreter(
-    model_path='tf_models/magenta_arbitrary-image-stylization-v1-256_int8_prediction_1.tflite'
-)
-
-style_transform = tf.lite.Interpreter(
-    model_path='tf_models/magenta_arbitrary-image-stylization-v1-256_int8_transfer_1.tflite'
-)
+style_predict = 'tf_models/magenta_arbitrary-image-stylization-v1-256_int8_prediction_1.tflite'
+style_transform = 'tf_models/magenta_arbitrary-image-stylization-v1-256_int8_transfer_1.tflite'
 
 
 # Function to load an image from a img bytes, and add a batch dimension.
@@ -64,7 +59,7 @@ def postprocess_img(img):
 # Function to run style prediction on preprocessed style image.
 def run_style_predict(style_img):
     # Load the model.
-    interpreter = style_predict
+    interpreter = tf.lite.Interpreter(model_path=style_predict)
 
     # Set model input.
     interpreter.allocate_tensors()
@@ -82,7 +77,7 @@ def run_style_predict(style_img):
 # Run style transform on preprocessed style image
 def run_style_transform(style_bottleneck, content_img):
     # Load the model.
-    interpreter = style_transform
+    interpreter = tf.lite.Interpreter(model_path=style_transform)
 
     # Set model input.
     input_details = interpreter.get_input_details()
